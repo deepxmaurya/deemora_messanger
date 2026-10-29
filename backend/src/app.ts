@@ -28,7 +28,7 @@ app.use("/api/messages", messageRoutes);
 const io = new Server(httpServer, {
   cors: {
     origin: ["http://localhost:3000",
-    "https://deemora-messanger-8g1p.vercel.app"]
+    "https://deemora-messanger-8g1p.vercel.app"],
     methods: ["GET", "POST"],
     credentials: true
   }
