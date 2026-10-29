@@ -113,6 +113,7 @@ export const startPrivateChat = async (
 };
 
 
+
 export async function getMyConversations(
   req: Request,
   res: Response
@@ -137,15 +138,25 @@ export async function getMyConversations(
        JOIN users other
          ON other.id = other_cm.user_id
 
-       LEFT JOIN messages last_msg
-         ON last_msg.id = (
-           SELECT m.id
-           FROM messages m
-           WHERE m.conversation_id = cm.conversation_id
-             AND m.message_type = 'text'
-           ORDER BY m.created_at DESC, m.id DESC
-           LIMIT 1
-         )
+       LEFT JOIN (
+         SELECT m1.*
+         FROM messages m1
+         WHERE m1.message_type = 'text'
+           AND NOT EXISTS (
+             SELECT 1
+             FROM messages m2
+             WHERE m2.conversation_id = m1.conversation_id
+               AND m2.message_type = 'text'
+               AND (
+                 m2.created_at > m1.created_at
+                 OR (
+                   m2.created_at = m1.created_at
+                   AND m2.id > m1.id
+                 )
+               )
+           )
+       ) last_msg
+         ON last_msg.conversation_id = cm.conversation_id
 
        WHERE cm.user_id = ?
 
