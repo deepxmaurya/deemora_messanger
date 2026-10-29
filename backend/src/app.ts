@@ -14,7 +14,10 @@ const app = express();
 const httpServer = createServer(app);
 
 app.use(cors({
-  origin: "http://localhost:3000"
+  origin: ["http://localhost:3000",
+    "https://deemora-messanger-8g1p.vercel.app"],
+     credentials: true
+  
 }));
 
 app.use(express.json());
@@ -24,8 +27,10 @@ app.use("/api/messages", messageRoutes);
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
+    origin: ["http://localhost:3000",
+    "https://deemora-messanger-8g1p.vercel.app"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 initializeSocket(io);
