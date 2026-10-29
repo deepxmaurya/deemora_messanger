@@ -12,11 +12,20 @@ export type ReadableMessage = {
   sender_id: number | string;
   read_at?: string | null;
 };
+type ChatMessage = {
+  id: number;
+  conversation_id: number | string;
+  sender_id: number | string;
+  username: string;
+  content: string;
+  created_at: string;
+  read_at: string | null;
+};
 
 type MessageReadOptions = {
   conversationId: string;
   setMessages: React.Dispatch<
-    React.SetStateAction<ReadableMessage[]>
+    React.SetStateAction<ChatMessage[]>
   >;
 };
 
