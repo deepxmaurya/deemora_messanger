@@ -2,6 +2,18 @@
 import type { Request, Response } from "express";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import pool from "../config/database";
+import webpush from "web-push";
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const vapidSubject = process.env.VAPID_SUBJECT;
+
+if (vapidPublicKey && vapidPrivateKey && vapidSubject) {
+  webpush.setVapidDetails(
+    vapidSubject,
+    vapidPublicKey,
+    vapidPrivateKey
+  );
+}
 
 interface MessageRow extends RowDataPacket {
   id: number;
@@ -64,6 +76,7 @@ export async function sendMessage(req: Request, res: Response) {
   try {
     const conversationId = req.params.conversationId;
     const userId = String(res.locals.userId);
+
     const content =
       typeof req.body.content === "string"
         ? req.body.content.trim()
@@ -85,6 +98,7 @@ export async function sendMessage(req: Request, res: Response) {
       return;
     }
 
+    // Check karo ki sender conversation ka member hai
     const [members] = await pool.execute<RowDataPacket[]>(
       `SELECT user_id
        FROM conversation_members
@@ -100,6 +114,7 @@ export async function sendMessage(req: Request, res: Response) {
       return;
     }
 
+    // Message MySQL mein save karo
     const [result] = await pool.execute<ResultSetHeader>(
       `INSERT INTO messages
        (conversation_id, sender_id, message_type, content)
@@ -107,6 +122,7 @@ export async function sendMessage(req: Request, res: Response) {
       [conversationId, userId, content]
     );
 
+    // Message ki details nikalo
     const [rows] = await pool.execute<MessageRow[]>(
       `SELECT
          m.id,
@@ -123,6 +139,8 @@ export async function sendMessage(req: Request, res: Response) {
     );
 
     const message = rows[0];
+
+    // Socket.IO se real-time message bhejo
     const io = req.app.get("io");
 
     if (io) {
@@ -132,12 +150,78 @@ export async function sendMessage(req: Request, res: Response) {
       );
     }
 
+    // Push Notification ke liye recipient ki subscriptions nikalo
+    const [subscriptions] = await pool.execute<RowDataPacket[]>(
+      `SELECT
+         ps.endpoint,
+         ps.p256dh,
+         ps.auth
+       FROM conversation_members cm
+       JOIN push_subscriptions ps
+         ON ps.user_id = cm.user_id
+       WHERE cm.conversation_id = ?
+         AND cm.user_id <> ?`,
+      [conversationId, userId]
+    );
+
+    // VAPID configuration available ho tabhi Push bhejo
+    if (
+      vapidPublicKey &&
+      vapidPrivateKey &&
+      vapidSubject &&
+      subscriptions.length > 0
+    ) {
+      const notificationPayload = JSON.stringify({
+        title: `New message from ${message.username}`,
+        body: message.content.substring(0, 120),
+        url: `/chat/${conversationId}`
+      });
+
+      // Har recipient device/browser ko notification bhejo
+      await Promise.all(
+        subscriptions.map(async (sub) => {
+          try {
+            await webpush.sendNotification(
+              {
+                endpoint: sub.endpoint,
+                keys: {
+                  p256dh: sub.p256dh,
+                  auth: sub.auth
+                }
+              },
+              notificationPayload
+            );
+          } catch (pushError: unknown) {
+            const statusCode =
+              typeof pushError === "object" &&
+              pushError !== null &&
+              "statusCode" in pushError
+                ? (pushError as { statusCode?: number }).statusCode
+                : undefined;
+
+            console.error("Push notification error:", statusCode);
+
+            // Expired subscription ko delete karo
+            if (statusCode === 404 || statusCode === 410) {
+              await pool.execute(
+                `DELETE FROM push_subscriptions
+                 WHERE endpoint = ?`,
+                [sub.endpoint]
+              );
+            }
+          }
+        })
+      );
+    }
+
     res.status(201).json({
       success: true,
       message
     });
+
   } catch (error) {
     console.error("Send message error:", error);
+
     res.status(500).json({
       success: false,
       message: "Message send nahi ho saka."

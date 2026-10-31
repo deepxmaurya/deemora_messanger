@@ -23,6 +23,25 @@ type Conversation = {
   last_message_at: string | null;
 };
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+
+  const base64 = (base64String + padding)
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+
+  const output = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; i++) {
+    output[i] = rawData.charCodeAt(i);
+  }
+
+  return output;
+}
+
+
 export default function DashboardPage() {
   const router = useRouter();
 
@@ -32,6 +51,8 @@ export default function DashboardPage() {
   const [chatsLoading, setChatsLoading] = useState(true);
   const [error, setError] = useState("");
   const [chatError, setChatError] = useState("");
+  const [notificationStatus, setNotificationStatus] = useState("");
+const [notificationLoading, setNotificationLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -104,6 +125,85 @@ export default function DashboardPage() {
     };
   }, [router]);
 
+
+
+async function enableNotifications() {
+  setNotificationStatus("");
+  setNotificationLoading(true);
+
+  try {
+    if (
+      !("serviceWorker" in navigator) ||
+      !("PushManager" in window) ||
+      !("Notification" in window)
+    ) {
+      throw new Error(
+        "Tumhara browser Push Notifications support nahi karta."
+      );
+    }
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+
+    if (!publicKey) {
+      throw new Error("VAPID Public Key nahi mili. Vercel environment variable check karo.");
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+      throw new Error(
+        "Notification permission allow nahi hui. Browser settings check karo."
+      );
+    }
+
+    const registration = await navigator.serviceWorker.register("/sw.js");
+
+    let subscription =
+      await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
+      });
+    }
+
+    const response = await fetch(`${API_URL}/api/push/subscribe`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ subscription }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || "Push subscription save nahi hui."
+      );
+    }
+
+    setNotificationStatus("Notifications successfully enable ho gayi hain!");
+  } catch (error) {
+    setNotificationStatus(
+      error instanceof Error
+        ? error.message
+        : "Notification enable nahi ho payi."
+    );
+  } finally {
+    setNotificationLoading(false);
+  }
+}
+
   function handleLogout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -169,12 +269,22 @@ export default function DashboardPage() {
 </span>
           </Link>
 
+         <div className="flex items-center gap-2">
+          <button
+            onClick={enableNotifications}
+            disabled={notificationLoading}
+            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold hover:bg-violet-500 disabled:opacity-50"
+          >
+            {notificationLoading ? "Enabling..." : "🔔 Enable Notifications"}
+          </button>
+
           <button
             onClick={handleLogout}
             className="rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5 hover:text-white"
           >
             Logout
           </button>
+        </div>
         </div>
       </header>
 
@@ -215,6 +325,11 @@ export default function DashboardPage() {
         </aside>
 
         <section className="min-w-0 p-5 sm:p-8">
+          {notificationStatus && (
+          <div className="mb-5 rounded-xl border border-violet-500/20 bg-violet-500/10 p-3 text-sm text-violet-300">
+            {notificationStatus}
+          </div>
+        )}
           <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold">My Chats</h1>

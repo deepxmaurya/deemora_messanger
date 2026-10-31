@@ -1,4 +1,4 @@
-import {testDatabaseConnection} from "./config/database.ts";
+import {testDatabaseConnection} from "./config/database";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -9,6 +9,7 @@ import conversationRoutes from "./routes/conversationRoutes";
 import messageRoutes from "./routes/messageRoutes";
 import { initializeSocket } from "./socket/socket";
 import adminRoutes from "./routes/adminRoutes";
+import pushRoutes from "./routes/pushRoutes";
 dotenv.config();
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/push", pushRoutes);
 
 const io = new Server(httpServer, {
   cors: {

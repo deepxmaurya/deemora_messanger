@@ -1,7 +1,7 @@
 
 import { Router } from "express";
-import { registerUser,searchUsers } from "../controllers/userController.ts";
-import {loginUser,getMyProfile} from "../controllers/userLogin.ts";
+import { registerUser,searchUsers } from "../controllers/userController";
+import {loginUser,getMyProfile} from "../controllers/userLogin";
 import {
   authenticateToken
 } from "../middleware/authMiddleware.js";
