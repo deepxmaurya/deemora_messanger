@@ -58,7 +58,7 @@ export default function DashboardPage() {
 
         if (profileResponse.status === 401) {
           localStorage.removeItem("token");
-          localStoragei.removeItem("userId");
+          localStorage.removeItem("userId");
           router.replace("/login");
           return;
         }
