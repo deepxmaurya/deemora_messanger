@@ -47,6 +47,7 @@ export async function getAllUsers(
        ORDER BY created_at DESC`
     );
 
+
     res.status(200).json({
       success: true,
       totalUsers: rows.length,
