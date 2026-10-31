@@ -25,7 +25,7 @@ export default function FindPeoplePage() {
   const [startingUserId, setStartingUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!sessionStorage.getItem("token")) {
+    if (!localStorage.getItem("token")) {
       router.replace("/login");
     }
   }, [router]);
@@ -44,7 +44,7 @@ export default function FindPeoplePage() {
       return;
     }
 
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       router.replace("/login");
@@ -66,8 +66,8 @@ export default function FindPeoplePage() {
       const data = await response.json();
 
       if (response.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("userId");
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
         router.replace("/login");
         return;
       }
@@ -88,7 +88,7 @@ export default function FindPeoplePage() {
 
   
 async function handleStartChat(user: User) {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   if (!token) {
     router.replace("/login");
@@ -112,8 +112,8 @@ async function handleStartChat(user: User) {
     const data = await response.json();
 
     if (response.status === 401) {
-      sessionStorage.removeItem("token");
-      sessionStorage.removeItem("userId");
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
       router.replace("/login");
       return;
     }

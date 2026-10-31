@@ -90,7 +90,7 @@ export default function ChatClient({
 });
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       router.replace("/login");
@@ -124,7 +124,7 @@ export default function ChatClient({
       setOtherUserId("");
       setConnectionError("");
 
-      const currentToken = sessionStorage.getItem("token");
+      const currentToken = localStorage.getItem("token");
       if (!currentToken) {
         router.replace("/login");
         return;
@@ -262,8 +262,8 @@ socket.on("message_deleted", ({ messageId, conversationId: eventConversationId }
         if (!active) return;
 
         if (response.status === 401) {
-          sessionStorage.removeItem("token");
-          sessionStorage.removeItem("userId");
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
           router.replace("/login");
           return;
         }
@@ -352,7 +352,7 @@ socket.on("message_deleted", ({ messageId, conversationId: eventConversationId }
       );
 
       if (response.status === 401) {
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
         router.replace("/login");
         return;
       }
@@ -399,7 +399,7 @@ async function handleEdit(messageId: number) {
     return;
   }
 
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
  
   if (!token) {
     router.replace("/login");
@@ -435,7 +435,7 @@ async function handleDelete(messageId: number) {
 
   if (!confirmed) return;
 
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   if (!token) {
     router.replace("/login");

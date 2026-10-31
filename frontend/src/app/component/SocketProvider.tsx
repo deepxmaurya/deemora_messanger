@@ -29,7 +29,7 @@ export default function SocketProvider({
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       return;

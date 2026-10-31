@@ -1,6 +1,6 @@
 
 "use client";
-
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -37,7 +37,7 @@ export default function DashboardPage() {
     let active = true;
 
     async function loadDashboard() {
-      const token = sessionStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (!token) {
         router.replace("/login");
@@ -57,8 +57,8 @@ export default function DashboardPage() {
         const profileData = await profileResponse.json();
 
         if (profileResponse.status === 401) {
-          sessionStorage.removeItem("token");
-          sessionStorage.removeItem("userId");
+          localStorage.removeItem("token");
+          localStoragei.removeItem("userId");
           router.replace("/login");
           return;
         }
@@ -105,8 +105,8 @@ export default function DashboardPage() {
   }, [router]);
 
   function handleLogout() {
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
     router.replace("/login");
   }
 
@@ -156,12 +156,17 @@ export default function DashboardPage() {
       <header className="border-b border-white/10 bg-[#0d111d]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-lg font-bold">
-              D
-            </span>
-            <span className="text-lg font-bold">
-              DreamShop <span className="text-violet-400">Chat</span>
-            </span>
+             <Image
+              src="/deemora-logo.png"
+              alt="Deemora"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover"
+            />
+            <span className="text-xl font-bold tracking-tight sm:text-2xl">
+  <span className="text-[#D4AF37]">Deemora</span>{" "}
+  <span className="text-violet-400">Chat</span>
+</span>
           </Link>
 
           <button

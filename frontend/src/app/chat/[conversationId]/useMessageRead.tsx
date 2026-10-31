@@ -37,7 +37,7 @@ export function useMessageRead({
 
   // Backend ko message read hone ki request bhejna
   const markMessagesAsRead = useCallback(async () => {
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) return;
 

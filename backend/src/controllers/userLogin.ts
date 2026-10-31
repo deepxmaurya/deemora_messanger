@@ -20,7 +20,7 @@ export async function loginUser(req: Request, res: Response) {
     }
 
     const [rows] = await pool.execute(
-      `SELECT id, username, display_name, password_hash, avatar_url
+      `SELECT id, username, display_name, password_hash, avatar_url,role
        FROM users
        WHERE username = ?
        LIMIT 1`,
@@ -33,6 +33,7 @@ export async function loginUser(req: Request, res: Response) {
       display_name: string;
       password_hash: string;
       avatar_url: string | null;
+      role: "admin" | "user";
     }[];
 
     if (users.length === 0) {
@@ -68,7 +69,8 @@ export async function loginUser(req: Request, res: Response) {
     }
 
     const token = jwt.sign(
-      { userId: user.id.toString() },
+      { userId: user.id.toString(),
+      role: user.role },
       secret,
       { expiresIn: "1h" }
     );
@@ -81,6 +83,7 @@ export async function loginUser(req: Request, res: Response) {
         id: user.id.toString(),
         username: user.username,
         display_name: user.display_name,
+        role: user.role,
         avatar_url: user.avatar_url
       }
     });

@@ -8,6 +8,7 @@ import userRoutes from "./routes/userRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes";
 import messageRoutes from "./routes/messageRoutes";
 import { initializeSocket } from "./socket/socket";
+import adminRoutes from "./routes/adminRoutes";
 dotenv.config();
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/admin", adminRoutes);
 
 const io = new Server(httpServer, {
   cors: {

@@ -1,5 +1,8 @@
-
+"use client";
+import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const features = [
   {
@@ -26,15 +29,38 @@ const contacts = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      // Token मौजूद है, सीधे Dashboard पर भेजो
+      router.replace("/dashboard");
+    } else {
+      // Token नहीं है, Home Page दिखाओ
+      setChecking(false);
+    }
+  }, [router]);
+
+  if (checking) {
+    return null;
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#080b14] text-white">
       {/* Navbar */}
       <header className="border-b border-white/10">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600 text-xl font-bold shadow-lg shadow-violet-600/30">
-              D
-            </span>
+            <Image
+              src="/deemora-logo.png"
+              alt="Deemora"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover"
+            />
             <span className="text-xl font-bold tracking-tight sm:text-2xl">
               Deemora <span className="text-violet-400">Chat</span>
             </span>
@@ -109,9 +135,13 @@ export default function HomePage() {
             {/* Chat Header */}
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 font-bold">
-                  D
-                </div>
+                 <Image
+              src="/deemora-logo.png"
+              alt="Deemora"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover"
+            />
                 <div>
                   <p className="font-semibold">Deemora Chat</p>
                   <p className="text-xs text-zinc-500">Your chat space</p>

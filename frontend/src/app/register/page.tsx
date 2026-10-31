@@ -1,6 +1,6 @@
 
 "use client";
-
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -61,9 +61,14 @@ export default function RegisterPage() {
   return (
     <main className="auth-page">
       <section className="auth-card">
-        <div className="brand-mark">D</div>
-
-        <p className="eyebrow">DREAMSHOP CHAT</p>
+         <Image
+              src="/deemora-logo.png"
+              alt="Deemora"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover"
+            />
+        <p className="eyebrow">DEEMORA CHAT</p>
         <h1>Create Account</h1>
         <p className="auth-description">
           Apni unique User ID banao aur chat shuru karo.

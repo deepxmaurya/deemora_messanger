@@ -1,6 +1,6 @@
 
 "use client";
-
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,13 +47,17 @@ export default function LoginPage() {
       }
 
       // Token ko current browser tab ke session mein rakhna
-      sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("userId", data.user.username);
-
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("userId", data.user.username);
+      localStorage.setItem("role", data.user.role);
       setMessage("Login successful! Dashboard khol rahe hain.");
 
       // Dashboard hum agle step mein banayenge
-      router.push("/dashboard");
+      if (data.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
     } catch {
       setMessage(
         "Backend se connect nahi ho paya. Backend server check karo."
@@ -70,9 +74,15 @@ export default function LoginPage() {
           ← Home
         </Link>
 
-        <div className="brand-mark">D</div>
+         <Image
+              src="/deemora-logo.png"
+              alt="Deemora"
+              width={44}
+              height={44}
+              className="h-11 w-11 rounded-2xl object-cover"
+            />
 
-        <p className="eyebrow">DREAMSHOP CHAT</p>
+        <p className="eyebrow">DEEMORA CHAT</p>
         <h1>Welcome Back</h1>
         <p className="auth-description">
           Apni User ID se login karo aur chat par wapas aao.
