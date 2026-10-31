@@ -328,7 +328,7 @@ socket.on("message_deleted", ({ messageId, conversationId: eventConversationId }
 
     if (!content || sending || !userId) return;
 
-    const token = sessionStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       router.replace("/login");
